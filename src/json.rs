@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Val {
     Null,
     Str(String),
@@ -17,6 +17,28 @@ pub fn json_escape(s: &str) -> String {
         .replace('\n', "\\n")
         .replace('\t', "\\t")
         .replace('\r', "\\r")
+}
+
+impl Val {
+    pub fn parse_literal(s: &str) -> Option<Val> {
+        if s.len() >= 2 && s.starts_with('"') && s.ends_with('"') {
+            Some(Val::Str(s[1..(s.len() - 1)].to_string()))
+        } else if s == "null" {
+            Some(Val::Null)
+        } else if s == "true" {
+            Some(Val::Bool(true))
+        } else if s == "false" {
+            Some(Val::Bool(false))
+        } else if s.is_empty() {
+            Some(Val::Str(String::new()))
+        } else if s.chars().next().unwrap().is_ascii_digit()
+            && s.chars().filter(|s| *s == '.').count() <= 1
+        {
+            Some(Val::Num(s.to_string()))
+        } else {
+            Some(Val::Str(s.to_string()))
+        }
+    }
 }
 
 impl Display for Val {
@@ -51,7 +73,7 @@ impl Display for Val {
                     } else {
                         needs_comma = true;
                     }
-                    res.push_str(&format!("\"{}\": {}", json_escape(k), v));
+                    res.push_str(&format!("\"{}\":{}", json_escape(k), v));
                 }
                 res.push('}');
                 write!(f, "{}", res)
