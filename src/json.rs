@@ -33,6 +33,7 @@ impl Val {
             Some(Val::Str(String::new()))
         } else if s.chars().next().unwrap().is_ascii_digit()
             && s.chars().filter(|s| *s == '.').count() <= 1
+            && s.chars().all(|s| s == '.' || s.is_ascii_digit())
         {
             Some(Val::Num(s.to_string()))
         } else {
